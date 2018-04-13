@@ -1,0 +1,61 @@
+Sub main()
+    Dim Inbox As Folder                             'Folder - used to gain access to inbox
+    Dim object As Object                            'object - used to hold mail object items
+    Dim count As Integer                            'count - used to maintain count while looping through mail objects
+    Dim propertyAccessor As propertyAccessor        'propertyAccessor - Used to access email properties
+    Dim headerData As String                        'headerData - Used to hold headerData of all emails in Inbox
+    Dim newEmailMsg As mailItem                     'newEmailMsg - Used to draft an Email With all header data
+    
+    '
+    ' Sets the Inbox variable to the default Inbox folder
+    '
+    
+    Set Inbox = Session.GetDefaultFolder(olFolderInbox)
+    
+    '
+    ' Sets the newEmailMsg variable to a new Email Msg
+    '
+    
+    Set newEmailMsg = Session.Application.CreateItem(olMailItem)
+    
+    '
+    ' Sets the counter to 0
+    '
+    
+    count = Int(0)
+    
+    '
+    ' For Each loop - used to iterate through all Items in mailbox
+    '
+    
+    For Each object In Inbox.Items
+    
+        count = count + 1   ' Increments the counter by 1
+        
+        '
+        ' If loop - grabs the header data for each email and prints appends it to the headerData String
+        '
+        
+        If (count < Inbox.Items.count) Then
+           On Error GoTo Oops
+             Title = ">>>>>>>>>>>>>>>>>>>NEW MESSAGE<<<<<<<<<<<<<< No: " & count & " Subject: " & object.Subject & vbNewLine & vbNewLine
+             headerData = headerData + Title
+             Debug.Print Title
+             Set propertyAccessor = object.propertyAccessor
+             header = propertyAccessor.GetProperty("http://schemas.microsoft.com/mapi/proptag/0x007D001E")
+             headerData = headerData + header
+        End If
+    Next
+    
+    newEmailMsg.Body = headerData
+    newEmailMsg.Display (True)
+    
+    Exit Sub
+Oops:
+    MsgBox ("Error: Something went wrong: " & Error & _
+                vbNewLine & vbNewLine & _
+                "More than likely, we have come acrossed an encrypted email that we cant handle at this time. All emails after this one will not be looked at.")
+    newEmailMsg.Body = headerData
+    newEmailMsg.Display (True)
+    
+End Sub
